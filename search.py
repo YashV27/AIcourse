@@ -118,7 +118,9 @@ def depthFirstSearch(problem):
             for cn in child_nodes:
                 arr=node+[cn]
                 fringe.push(arr)
-        
+    else:
+        return 'failure'
+    
     solnarr=[soln[i][1] for i in range(1,len(soln))]
     return solnarr
     
@@ -186,6 +188,8 @@ def uniformCostSearch(problem):
                 arr=node+[cn]
                 cncost=cn[-1]
                 fringe.push(arr,cost+cncost)
+    else:
+        return 'failure'
         
     solnarr=[soln[i][1] for i in range(1,len(soln))]
     return solnarr
@@ -235,6 +239,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 cnfn=cnhn+cngn
                 fringe.push(arr,fn+cnfn-hn)
         
+    else: 
+        return 'failure'
+
     solnarr=[soln[i][1] for i in range(1,len(soln))]
     return solnarr
 
