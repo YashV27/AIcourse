@@ -294,6 +294,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.cornersNotExpanded = list(self.corners)
 
     def getStartState(self):
         """
@@ -302,25 +303,15 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
         return self.startingPosition
+        cornerNotVisited = list(self.corners)
         util.raiseNotDefined()
-    
-    def cornersNotVisited(self, node):
-        positions = [node[i][0] for i in range(len(node))]
-        cornarr = [x for x in self.corners]
-        cnv=[]
-        for cor in cornarr:
-            if cor not in positions:
-                cnv.append(cor)
-        return cnv
 
-    def isGoalState(self, node):
+    def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        
-        cnv = self.cornersNotVisited(node)       
-        return len(cnv)==0
+        return len(state[3])==0
 
         util.raiseNotDefined()
         
@@ -385,7 +376,31 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    
+    "Algorithm - minimum distance in a problem with no walls"
+    hn=0
+    print state
+    pos=state[0]
+    cnv=[x for x in state[3]]
+    print pos,cnv
+    if (len(cnv)==0):
+        return 0
+
+    mtnd = util.manhattanDistance
+    while len(cnv)!=0:
+        for i in range(len(cnv)-1):
+            for j in range(i+1,len(cnv)):
+                if mtnd(pos,cnv[j])>mtnd(pos,cnv[i]):
+                    temp = cnv[j]
+                    cnv[j]=cnv[i]
+                    cnv[i]=temp
+        nextp=cnv.pop()
+        hn+=mtnd(pos,nextp)
+        pos=nextp
+
+    return hn
+
+    #return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

@@ -102,20 +102,33 @@ def depthFirstSearch(problem):
     fringe=util.Stack()
     cldset=set([])
     soln=[]
+    
+    if (problem.__str__() == "CornersProblem"):
+        start=[(problem.getStartState(),'',0,list(problem.corners))]
 
     fringe.push(start)
     while(fringe.isEmpty()==False):
         node = fringe.pop()
-        endpos = node[-1][0]
-        goalCheck = endpos
+        #lastnode = node[-1]
+        currentPos = node[-1][0]
+        goalCheck = node[-1][0]
+        setparm = node[-1][0]
+
+        if (problem.__str__() == "CornersProblem"):
+            goalCheck = node[-1]
+            setparm = (currentPos,tuple(node[-1][3]))
 
         if problem.isGoalState(goalCheck):
             soln=node
             break
-        if endpos not in cldset:
-            child_nodes=problem.getSuccessors(endpos)
-            cldset.add(endpos)
+        if setparm not in cldset:
+            child_nodes=problem.getSuccessors(currentPos)
+            cldset.add(setparm)
             for cn in child_nodes:
+                if (problem.__str__() == "CornersProblem"):
+                    cnv = [x for x in node[-1][3] if x!=cn[0]]
+                    cn=(cn[0],cn[1],cn[2],cnv)
+
                 arr=node+[cn]
                 fringe.push(arr)
     else:
@@ -135,19 +148,32 @@ def breadthFirstSearch(problem):
     cldset=set([])
     soln=[]
 
+    if (problem.__str__() == "CornersProblem"):
+        start=[(problem.getStartState(),'',0,list(problem.corners))]
+
     fringe.push(start)
     while(fringe.isEmpty()==False):
         node = fringe.pop()
-        endpos=node[-1][0]
-        goalCheck = endpos
-            
+        #lastnode = node[-1]
+        currentPos = node[-1][0]
+        goalCheck = node[-1][0]
+        setparm = node[-1][0]
+    
+        if (problem.__str__() == "CornersProblem"):
+            goalCheck = node[-1]
+            setparm = (currentPos,tuple(node[-1][3]))
+
         if problem.isGoalState(goalCheck):
             soln=node
             break
-        if endpos not in cldset:
-            child_nodes=problem.getSuccessors(endpos)
-            cldset.add(endpos)
+        if setparm not in cldset:
+            child_nodes=problem.getSuccessors(currentPos)
+            cldset.add(setparm)
             for cn in child_nodes:
+                if (problem.__str__() == "CornersProblem"):
+                    cnv = [x for x in node[-1][3] if x!=cn[0]]
+                    cn=(cn[0],cn[1],cn[2],cnv)
+
                 arr=node+[cn]
                 fringe.push(arr)
     else:
@@ -155,7 +181,7 @@ def breadthFirstSearch(problem):
 
     solnarr=[soln[i][1] for i in range(1,len(soln))]
     return solnarr
-
+    #return []
 
     util.raiseNotDefined()
 
@@ -167,26 +193,35 @@ def uniformCostSearch(problem):
     fringe=util.PriorityQueue()
     cldset=set([])
     soln=[]
-    print problem
+    if (problem.__str__() == "CornersProblem"):
+        start=[(problem.getStartState(),'',0,list(problem.corners))]
 
     fringe.push(start,0)
     while(fringe.isEmpty()==False):
         (node,cost) = fringe.prpop()
-        endpos=node[-1][0]
-        goalCheck = endpos
-
-        if problem.__str__() == "PositionSearchProblem":
-            goalCheck=endpos
+        #lastnode = node[-1]
+        currentPos = node[-1][0]
+        goalCheck = node[-1][0]
+        setparm = node[-1][0]
+        
+        if (problem.__str__() == "CornersProblem"):
+            goalCheck = node[-1]
+            setparm = (currentPos,tuple(node[-1][3]))
 
         if problem.isGoalState(goalCheck):
             soln=node
             break
-        if endpos not in cldset:
-            child_nodes=problem.getSuccessors(endpos)
-            cldset.add(endpos)
+        if setparm not in cldset:
+            child_nodes=problem.getSuccessors(currentPos)
+            cldset.add(setparm)
+            
             for cn in child_nodes:
+                if (problem.__str__() == "CornersProblem"):
+                    cnv = [x for x in node[-1][3] if x!=cn[0]]
+                    cn=(cn[0],cn[1],cn[2],cnv)
+                
                 arr=node+[cn]
-                cncost=cn[-1]
+                cncost=cn[2]
                 fringe.push(arr,cost+cncost)
     else:
         return 'failure'
@@ -206,36 +241,54 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-
     start=[(problem.getStartState(),'',0)]
+    heuristicvar = start[0][0]
     fringe=util.PriorityQueue()
     cldset=set([])
     soln=[]
-    print problem
 
-    hn=heuristic(start[0][0],problem)
+    if (problem.__str__() == "CornersProblem"):
+        start=[(problem.getStartState(),'',0,list(problem.corners))]
+        heuristicvar = start[0]
+
+    hn=heuristic(heuristicvar,problem)
     gn=0
     fn=gn+hn
     fringe.push(start,fn)
+
     while(fringe.isEmpty()==False):
         (node,fn) = fringe.prpop()
-        endpos=node[-1][0]
-        hn=heuristic(endpos,problem)
-        goalCheck = endpos
+        heuristicvar = node[-1][0]
+        #lastnode = node[-1]
+        currentPos = node[-1][0]
+        goalCheck = node[-1][0]
+        setparm = node[-1][0]
 
-        if problem.__str__() == "PositionSearchProblem":
-            goalCheck=endpos
-
+        if (problem.__str__() == "CornersProblem"):
+            goalCheck = node[-1]
+            heuristicvar = node[-1]
+            setparm = (currentPos,tuple(node[-1][3]))
+        
+        hn = heuristic(heuristicvar,problem)
         if problem.isGoalState(goalCheck):
             soln=node
             break
-        if endpos not in cldset:
-            child_nodes=problem.getSuccessors(endpos)
-            cldset.add(endpos)
+
+        if setparm not in cldset:
+            child_nodes=problem.getSuccessors(currentPos)
+            cldset.add(setparm)
+
             for cn in child_nodes:
+                cnheuristicvar = cn[0]
+
+                if (problem.__str__() == "CornersProblem"):
+                    cnv = [x for x in node[-1][3] if x!=cn[0]]
+                    cn=(cn[0],cn[1],cn[2],cnv)
+                    cnheuristicvar = cn
+
                 arr=node+[cn]
-                cnhn=heuristic(cn[0],problem)
-                cngn=cn[-1]
+                cnhn=heuristic(cnheuristicvar,problem)
+                cngn=cn[2]
                 cnfn=cnhn+cngn
                 fringe.push(arr,fn+cnfn-hn)
         
