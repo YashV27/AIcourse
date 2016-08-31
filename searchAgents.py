@@ -1,4 +1,4 @@
-# searchAgents.py
+# searchAgents
 # ---------------
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
@@ -162,9 +162,10 @@ class PositionSearchProblem(search.SearchProblem):
         self.goal = goal
         self.costFn = costFn
         self.visualize = visualize
+	
         if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
             print 'Warning: this does not look like a regular search maze'
-
+	
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
@@ -302,8 +303,8 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return self.startingPosition
-        cornerNotVisited = list(self.corners)
+        cornersNotVisited = self.corners
+        return (self.startingPosition,cornersNotVisited)
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -311,7 +312,7 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        return len(state[3])==0
+        return len(state[1])==0
 
         util.raiseNotDefined()
         
@@ -335,11 +336,13 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-            x,y = state
+            x,y = state[0]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x+dx), int(y+dy)
             if not self.walls[nextx][nexty]:
-                nextState = (nextx,nexty)
+                nextPos= (nextx,nexty)
+                cnv = [x for x in state[1] if x!=nextPos]
+                nextState = (nextPos,tuple(cnv))
                 successors.append( (nextState, action, 1) )
 
         self._expanded += 1 # DO NOT CHANGE
@@ -379,24 +382,43 @@ def cornersHeuristic(state, problem):
     
     "Algorithm - minimum distance in a problem with no walls"
     hn=0
-    print state
-    pos=state[0]
-    cnv=[x for x in state[3]]
-    print pos,cnv
+    currentPos = state[0]
+    cnv=[x for x in state[1]]
+
     if (len(cnv)==0):
         return 0
+    mntnd = util.manhattanDistance
 
-    mtnd = util.manhattanDistance
+    "algo = sum of manhattan distances in a simpler problem with no walls. fast but inadmissable"
+    """ 
     while len(cnv)!=0:
-        for i in range(len(cnv)-1):
-            for j in range(i+1,len(cnv)):
-                if mtnd(pos,cnv[j])>mtnd(pos,cnv[i]):
+        l = len(cnv)
+        for i in range(l-1):
+            for j in range(i+1,l):
+                if mntnd(currentPos,cnv[j])>mntnd(currentPos,cnv[i]):
                     temp = cnv[j]
                     cnv[j]=cnv[i]
                     cnv[i]=temp
+        
         nextp=cnv.pop()
-        hn+=mtnd(pos,nextp)
+        hn+=mtnd(currentPos,nextp)
         pos=nextp
+    """
+
+    "algo - max manhattan distance"
+    l=len(cnv)
+    for i in range(l-1):
+        for j in range(i+1,l):
+            if mntnd(currentPos,cnv[j])>mntnd(currentPos,cnv[i]):
+                temp = cnv[j]
+                cnv[j]=cnv[i]
+                cnv[i]=temp
+
+
+
+    hn = mntnd(currentPos,cnv[0])
+    #hn = len(cnv)
+    
 
     return hn
 
@@ -461,11 +483,23 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+    
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
+
+def quicksort(lst,pos):
+    mntnd=util.manhattanDistance
+    print "in method",lst,pos
+    if len(lst)<=1:
+        return lst
+    smaller = [x for x in lst[1:] if mntnd(x,pos)<mntnd(x,lst[0])]
+    larger = [x for x in lst[1:] if mntnd(x,pos)>=mntnd(x,lst[0])]
+        
+    return quicksort(smaller,pos)+[lst[0]]+quicksort(larger,pos)
+
 
 def foodHeuristic(state, problem):
     """
@@ -495,9 +529,54 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    position, foodGrid = state
+    currentPos, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    hn=0
+    mntnd = util.manhattanDistance
+    mazed = mazeDistance
+
+    foodarr=[]
+    for (i,row) in enumerate(foodGrid):
+        for (j,_) in enumerate(row):
+            if foodGrid[i][j]:
+                foodarr.append((i,j))
+    
+    #hn = len(foodarr)
+    
+    maxmand=0
+    for i in range(len(foodarr)):
+        md = mntnd(currentPos,foodarr[i])
+        if md>maxmand:
+            maxmand=md    
+
+    maxmazed = 0
+    gameState = problem.startingGameState
+    for i in range(len(foodarr)):
+        mzd = mazed(currentPos,foodarr[i],gameState)
+        if mzd>maxmazed:
+            maxmazed=mzd
+    
+    """
+    algo = search.aStarSearch
+    heuristic = manhattanHeuristic
+    maxmazed = 0
+    gameState = problem.startingGameState
+
+    for i in range(len(foodarr)):
+        prob = PositionSearchProblem(problem.startingGameState,goal=foodarr[i])
+        prob.startState=currentPos
+        mzd = len(algo(prob,heuristic))
+        if mzd>maxmazed:
+            maxmazed=mzd
+    """
+    """
+    A BETTER HEURISTIC - 
+    min manhattan distance to eat all dots closest to corners
+    """
+
+    hn = (maxmazed+maxmand)/2
+    return hn
+    #return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -528,6 +607,10 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        algo = search.breadthFirstSearch
+        path = algo(problem)
+        return path
+        
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -552,7 +635,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
         self.food = gameState.getFood()
-
+        
         # Store info for the PositionSearchProblem (no need to change this)
         self.walls = gameState.getWalls()
         self.startState = gameState.getPacmanPosition()
@@ -567,6 +650,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        return self.food[x][y]
+        
         util.raiseNotDefined()
 
 def mazeDistance(point1, point2, gameState):

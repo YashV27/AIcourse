@@ -103,32 +103,19 @@ def depthFirstSearch(problem):
     cldset=set([])
     soln=[]
     
-    if (problem.__str__() == "CornersProblem"):
-        start=[(problem.getStartState(),'',0,list(problem.corners))]
-
     fringe.push(start)
     while(fringe.isEmpty()==False):
         node = fringe.pop()
         #lastnode = node[-1]
-        currentPos = node[-1][0]
-        goalCheck = node[-1][0]
-        setparm = node[-1][0]
+        currentState = node[-1][0]
 
-        if (problem.__str__() == "CornersProblem"):
-            goalCheck = node[-1]
-            setparm = (currentPos,tuple(node[-1][3]))
-
-        if problem.isGoalState(goalCheck):
+        if problem.isGoalState(currentState):
             soln=node
             break
-        if setparm not in cldset:
-            child_nodes=problem.getSuccessors(currentPos)
-            cldset.add(setparm)
+        if currentState not in cldset:
+            child_nodes=problem.getSuccessors(currentState)
+            cldset.add(currentState)
             for cn in child_nodes:
-                if (problem.__str__() == "CornersProblem"):
-                    cnv = [x for x in node[-1][3] if x!=cn[0]]
-                    cn=(cn[0],cn[1],cn[2],cnv)
-
                 arr=node+[cn]
                 fringe.push(arr)
     else:
@@ -148,32 +135,19 @@ def breadthFirstSearch(problem):
     cldset=set([])
     soln=[]
 
-    if (problem.__str__() == "CornersProblem"):
-        start=[(problem.getStartState(),'',0,list(problem.corners))]
-
     fringe.push(start)
     while(fringe.isEmpty()==False):
         node = fringe.pop()
         #lastnode = node[-1]
-        currentPos = node[-1][0]
-        goalCheck = node[-1][0]
-        setparm = node[-1][0]
-    
-        if (problem.__str__() == "CornersProblem"):
-            goalCheck = node[-1]
-            setparm = (currentPos,tuple(node[-1][3]))
+        currentState = node[-1][0]
 
-        if problem.isGoalState(goalCheck):
+        if problem.isGoalState(currentState):
             soln=node
             break
-        if setparm not in cldset:
-            child_nodes=problem.getSuccessors(currentPos)
-            cldset.add(setparm)
+        if currentState not in cldset:
+            child_nodes=problem.getSuccessors(currentState)
+            cldset.add(currentState)
             for cn in child_nodes:
-                if (problem.__str__() == "CornersProblem"):
-                    cnv = [x for x in node[-1][3] if x!=cn[0]]
-                    cn=(cn[0],cn[1],cn[2],cnv)
-
                 arr=node+[cn]
                 fringe.push(arr)
     else:
@@ -193,33 +167,20 @@ def uniformCostSearch(problem):
     fringe=util.PriorityQueue()
     cldset=set([])
     soln=[]
-    if (problem.__str__() == "CornersProblem"):
-        start=[(problem.getStartState(),'',0,list(problem.corners))]
-
+ 
     fringe.push(start,0)
     while(fringe.isEmpty()==False):
         (node,cost) = fringe.prpop()
-        #lastnode = node[-1]
-        currentPos = node[-1][0]
-        goalCheck = node[-1][0]
-        setparm = node[-1][0]
-        
-        if (problem.__str__() == "CornersProblem"):
-            goalCheck = node[-1]
-            setparm = (currentPos,tuple(node[-1][3]))
+        currentState = node[-1][0]
 
-        if problem.isGoalState(goalCheck):
+        if problem.isGoalState(currentState):
             soln=node
             break
-        if setparm not in cldset:
-            child_nodes=problem.getSuccessors(currentPos)
-            cldset.add(setparm)
+        if currentState not in cldset:
+            child_nodes=problem.getSuccessors(currentState)
+            cldset.add(currentState)
             
             for cn in child_nodes:
-                if (problem.__str__() == "CornersProblem"):
-                    cnv = [x for x in node[-1][3] if x!=cn[0]]
-                    cn=(cn[0],cn[1],cn[2],cnv)
-                
                 arr=node+[cn]
                 cncost=cn[2]
                 fringe.push(arr,cost+cncost)
@@ -242,52 +203,30 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     start=[(problem.getStartState(),'',0)]
-    heuristicvar = start[0][0]
     fringe=util.PriorityQueue()
     cldset=set([])
     soln=[]
-
-    if (problem.__str__() == "CornersProblem"):
-        start=[(problem.getStartState(),'',0,list(problem.corners))]
-        heuristicvar = start[0]
-
-    hn=heuristic(heuristicvar,problem)
+    hn=heuristic(start[0][0],problem)
     gn=0
     fn=gn+hn
     fringe.push(start,fn)
 
     while(fringe.isEmpty()==False):
         (node,fn) = fringe.prpop()
-        heuristicvar = node[-1][0]
-        #lastnode = node[-1]
-        currentPos = node[-1][0]
-        goalCheck = node[-1][0]
-        setparm = node[-1][0]
+        currentState = node[-1][0]        
+        hn = heuristic(currentState,problem)
 
-        if (problem.__str__() == "CornersProblem"):
-            goalCheck = node[-1]
-            heuristicvar = node[-1]
-            setparm = (currentPos,tuple(node[-1][3]))
-        
-        hn = heuristic(heuristicvar,problem)
-        if problem.isGoalState(goalCheck):
+        if problem.isGoalState(currentState):
             soln=node
             break
 
-        if setparm not in cldset:
-            child_nodes=problem.getSuccessors(currentPos)
-            cldset.add(setparm)
+        if currentState not in cldset:
+            child_nodes=problem.getSuccessors(currentState)
+            cldset.add(currentState)
 
             for cn in child_nodes:
-                cnheuristicvar = cn[0]
-
-                if (problem.__str__() == "CornersProblem"):
-                    cnv = [x for x in node[-1][3] if x!=cn[0]]
-                    cn=(cn[0],cn[1],cn[2],cnv)
-                    cnheuristicvar = cn
-
                 arr=node+[cn]
-                cnhn=heuristic(cnheuristicvar,problem)
+                cnhn=heuristic(cn[0],problem)
                 cngn=cn[2]
                 cnfn=cnhn+cngn
                 fringe.push(arr,fn+cnfn-hn)
@@ -297,7 +236,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     solnarr=[soln[i][1] for i in range(1,len(soln))]
     return solnarr
-
+    #return []
 
     util.raiseNotDefined()
 
